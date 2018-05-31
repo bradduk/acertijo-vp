@@ -2,25 +2,20 @@
 
 <head>
     <title>Acertijo de Asier</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
     <style>
         .movements {
             height: 64px;
+            font-size: 4em;
+            margin-left: 10px;
+            position: absolute;
+            top: 0px;
+            color: yellow;
         }
         
-        .movement_right {
-            height: 64px;
-            width: 90px;
-            background-image: url("arrow_right.png");
-            background-size: cover;
-            float: left;
-        }
-        
-        .movement_left {
-            float: left;
-            height: 64px;
-            width: 90;
-            background-size: cover;
-            background-image: url("arrow_left.png");
+        .arrow {
+            padding-left: 10px;
         }
         
         .background {
@@ -70,8 +65,11 @@
             background-image: url("snake.png");
             background-size: contain;
         }
+        
+        .invalid {
+            color: red;
+        }
     </style>
-    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -84,14 +82,22 @@
         <div id="step4" class="snake"></div>
     </div>
     <div id="test">
-        <button id="solutionButton" onclick="testSolution()">Test the solution</button>
-        <button id="clearButton" onclick="clearSolution()">Clear the solution</button>
+        <button type="button" class="btn btn-primary" id="solutionButton" onclick="testSolution()">Test the solution</button>
+        <button type="button" class="btn btn-danger" id="clearButton" onclick="clearSolution()">Clear the solution</button>
+        <button type="button" class="btn btn-success" id="copysolution" onclick="copySolution()" title="Solution copied">Copy the solution</button>
     </div>
     <div id="solution">
 
     </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
     <script>
         var movements = ['0'];
+
+        $(function() {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
 
         $("body").on("keypress", function(event) {
 
@@ -103,15 +109,54 @@
                     movements.push("-1");
                 } else if (event.keyCode == 39) {
                     movements.push("1");
+                } else if (event.keyCode == 8) {
+                    movements.pop();
+                    event.preventDefault();
                 }
 
                 drawMovements();
+
+                testInProgressSolution();
             }
         });
+
+        function copySolution() {
+            var copyText = "";
+            movements.forEach(function(e) {
+                if (e != 0) {
+                    copyText += " " + e;
+                }
+            });
+
+            copyText.select();
+            document.execCommand("copy");
+            $('.copysolution').tooltip();
+        }
+
+        function testInProgressSolution() {
+            var valid = true;
+            for (var i = 1; i <= 12; i++) {
+                var pos = 0;
+                for (var j = i * 1; j < 12; j += i) {
+                    if (j > 12) return;
+                    pos += parseInt(movements[j]);
+                    if (pos > 1 || pos < -1) {
+                        valid = false;
+                        $("#movements").addClass("invalid");
+                        $("#solution").append("<p>Invalid movement at pass " + i);
+                        break;
+                    }
+                }
+            }
+            if (valid) {
+                $("#movements").removeClass("invalid");
+            }
+        }
 
         function drawMovements() {
             console.log("movements: " + movements);
             $("#movements").empty();
+            $("#solution").empty();
             if (movements != undefined && movements.length > 0) {
                 movements.forEach(function(e) {
                     var image = "right";
@@ -120,12 +165,13 @@
                     } else if (e == "0") {
                         return;
                     }
-                    $("#movements").append("<div class='movement_" + image + "'></div>");
+                    $("#movements").append("<i class='arrow fas fa-arrow-" + image + "'></i>");
                 });
             }
         }
 
         function testSolution() {
+            $("#solution").empty();
             var valid = true;
             if (movements != undefined && movements.length == 13) {
                 for (var i = 1; i <= 12; i++) {
