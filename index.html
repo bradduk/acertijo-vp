@@ -91,14 +91,14 @@
 
     </div>
     <script>
-        var movements = [];
+        var movements = ['0'];
 
         $("body").on("keypress", function(event) {
 
             console.log("Event received: " + event.keyCode);
             console.log("movements: " + movements);
 
-            if (movements.length < 12) {
+            if (movements.length <= 12) {
                 if (event.keyCode == 37) {
                     movements.push("-1");
                 } else if (event.keyCode == 39) {
@@ -117,6 +117,8 @@
                     var image = "right";
                     if (e == "-1") {
                         image = "left";
+                    } else if (e == "0") {
+                        return;
                     }
                     $("#movements").append("<div class='movement_" + image + "'></div>");
                 });
@@ -125,11 +127,11 @@
 
         function testSolution() {
             var valid = true;
-            if (movements != undefined && movements.length == 12) {
+            if (movements != undefined && movements.length == 13) {
                 for (var i = 1; i <= 12; i++) {
                     var pos = 0;
                     $("#solution").append("<ul> Pass " + i);
-                    for (var j = 0; j < 12; j += i) {
+                    for (var j = i * 1; j < 12; j += i) {
                         if (j > 12) return;
                         pos += parseInt(movements[j]);
                         if (pos > 1 || pos < -1) {
