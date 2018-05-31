@@ -95,10 +95,6 @@
     <script>
         var movements = ['0'];
 
-        $(function() {
-            $('[data-toggle="tooltip"]').tooltip()
-        })
-
         $("body").on("keypress", function(event) {
 
             console.log("Event received: " + event.keyCode);
@@ -123,14 +119,45 @@
         function copySolution() {
             var copyText = "";
             movements.forEach(function(e) {
-                if (e != 0) {
-                    copyText += " " + e;
+                if (e == "1") {
+                    copyText += " D";
+                } else if (e == "-1") {
+                    copyText += " I";
                 }
             });
 
-            copyText.select();
-            document.execCommand("copy");
-            $('.copysolution').tooltip();
+            copyTextToClipboard(copyText);
+            $('.copysolution').tooltip('show');
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                var successful = document.execCommand('copy');
+                var msg = successful ? 'successful' : 'unsuccessful';
+                console.log('Fallback: Copying text command was ' + msg);
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function copyTextToClipboard(text) {
+            if (!navigator.clipboard) {
+                fallbackCopyTextToClipboard(text);
+                return;
+            }
+            navigator.clipboard.writeText(text).then(function() {
+                console.log('Async: Copying to clipboard was successful!');
+            }, function(err) {
+                console.error('Async: Could not copy text: ', err);
+            });
         }
 
         function testInProgressSolution() {
